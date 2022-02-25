@@ -1,8 +1,9 @@
 {
   "name": "vuepress-theme-dog",
-  "version": "1.0.0-beta.35",
+  "version": "1.0.0-beta.36",
   "keywords": [
     "vuepress-theme",
+    "vuepress-theme-blog",
     "vuepress@next",
     "vuepress2",
     "vuepress-theme-dog"
@@ -47,5 +48,13 @@
     "lib": "lib"
   },
   "devDependencies": {},
-  "author": "artiely"
+  "author": "artiely",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artiely/vuepress-theme-dog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/artiely/vuepress-theme-dog/issues"
+  },
+  "homepage": "https://github.com/artiely/vuepress-theme-dog#readme"
 }
