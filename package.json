@@ -1,6 +1,6 @@
 {
   "name": "vuepress-theme-dog",
-  "version": "1.0.0-beta.37",
+  "version": "1.0.0-beta.38",
   "keywords": [
     "vuepress-theme",
     "vuepress-theme-blog",
@@ -14,7 +14,8 @@
   ],
   "scripts": {},
   "dependencies": {
-    "@vueuse/core": "^7.5.5",
+    "@vueuse/core": "^7.7.0",
+    "@vueuse/router": "^7.7.0",
     "colorthief": "^2.3.2",
     "dayjs": "^1.10.7",
     "gitalk": "^1.7.2",
