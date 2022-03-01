@@ -1,6 +1,7 @@
 <template>
   <div class="article-wrapper">
-    <div class="article-box" v-for="item in posts">
+  <!-- FIXME: : 默认卡片都是隐藏的 -->
+    <div class="article-box" v-for="item in currentPageData" :key="item.id">
       <article class="article">
         <div class="poster-wrapper" v-if="item.frontmatter">
           <a :href="link(item.link)">
@@ -20,45 +21,57 @@
             <Cover :item="item" />
           </a>
         </div>
-        <div >
-        
-        <div class="article-info" v-if="item.frontmatter" >
-          <h1 class="article-title">
-            <a :href="link(item.link)">{{ item.frontmatter.title }}</a>
-          </h1>
+        <div>
+          <div class="article-info" v-if="item.frontmatter">
+            <h1 class="article-title">
+              <a :href="link(item.link)">{{ item.frontmatter.title }}</a>
+            </h1>
 
-          <div class="article-con">
-            <p class="article-desc">{{ item.frontmatter.summary }}</p>
-          </div>
-          <div class="article-tags" v-if="item.frontmatter.tag">
-            <span class="tag" v-for="tag in item.frontmatter.tag.slice(0, 3)"
-              >#{{ tag }}</span
-            >
-          </div>
-          <div class="article-meta">
-            <span class="date">
-              <i class="iconfont icon-rili1" />
-              {{ dayjs(item.frontmatter.date).format("YYYY/MM/DD") }}</span
-            >
-            <span class="author"
-              ><i class="iconfont icon-zuozhe" />
-              {{ item.frontmatter.author }}</span
-            >
-          </div>
+            <div class="article-con">
+              <p class="article-desc">{{ item.frontmatter.summary }}</p>
+            </div>
+            <div class="article-tags" v-if="item.frontmatter.tag">
+              <span class="tag" v-for="tag in item.frontmatter.tag.slice(0, 3)"
+                >#{{ tag }}</span
+              >
+            </div>
+            <div class="article-meta">
+              <span class="date">
+                <i class="iconfont icon-rili1" />
+                {{ dayjs(item.frontmatter.date).format("YYYY/MM/DD") }}</span
+              >
+              <span class="author"
+                ><i class="iconfont icon-zuozhe" />
+                {{ item.frontmatter.author }}</span
+              >
+            </div>
 
-          <a class="more" :href="link(item.link)">
-            <span class="words">
-              <i class="iconfont icon-tongji" />
-              {{ item.frontmatter.words }} words /{{
-                item.frontmatter.readTime
-              }}</span
-            >
-            <span class="read">阅读全文 <i class="iconfont icon-you" /></span>
-          </a>
-        </div>
+            <a class="more" :href="link(item.link)">
+              <span class="words">
+                <i class="iconfont icon-tongji" />
+                {{ item.frontmatter.words }} words /{{
+                  item.frontmatter.readTime
+                }}</span
+              >
+              <span class="read">阅读全文 <i class="iconfont icon-you" /></span>
+            </a>
+          </div>
         </div>
       </article>
     </div>
+  </div>
+  <div class="my-4 my-page">
+    <button :disabled="isFirstPage" :class="isFirstPage?'disabled':''" @click="prev">prev</button>
+    <button
+      v-for="item in pageCount"
+      :key="item"
+      :disabled="currentPage === item"
+      @click="currentPage = item"
+      :class="currentPage === item?'disabled':''"
+    >
+      {{ item }}
+    </button>
+    <button :disabled="isLastPage" :class="isLastPage?'disabled':''" @click="next">next</button>
   </div>
 </template>
 <script setup>
@@ -66,7 +79,42 @@ import Cover from "./Cover.vue";
 import { hexToRgba } from "../utils/index.js";
 import dayjs from "dayjs";
 import gsap from "gsap";
-import { onMounted } from "vue";
+import { onMounted, ref,nextTick } from "vue";
+import { useOffsetPagination } from "@vueuse/core";
+import { useRouteQuery } from '@vueuse/router'
+const posts = __POSTS__.posts;
+const link = (link) => `${link}.html`;
+
+const pageSize = 6;
+const currentPageData = ref(posts.slice(0, pageSize));
+const page = useRouteQuery('page') 
+
+page.value=1
+const {
+  currentPage,
+  currentPageSize,
+  pageCount,
+  isFirstPage,
+  isLastPage,
+  prev,
+  next,
+} = useOffsetPagination({
+  total: posts.length,
+  page: 1,
+  pageSize,
+  onPageChange: async() => {
+    
+    currentPageData.value = posts.slice(
+      (currentPage.value - 1) * pageSize,
+      (currentPage.value - 1) * pageSize + pageSize
+    );
+    window.scrollTo(0,0)
+    page.value=currentPage.value
+    await nextTick()
+    handlerStagger();
+  },
+});
+
 const handlerStagger = () => {
   var ob = new IntersectionObserver((entries, self) => {
     let targets = entries
@@ -92,7 +140,7 @@ const handlerStagger = () => {
   import("vanilla-tilt").then((res) => {
     res.default.init(document.querySelectorAll(".article"), {
       max: 5,
-      reverse:true,
+      reverse: true,
     });
   });
 };
@@ -100,11 +148,34 @@ const handlerStagger = () => {
 onMounted(() => {
   handlerStagger();
 });
-const posts = __POSTS__.posts;
-const link = (link) => `${link}.html`;
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 @import "../styles/var.scss";
+.my-page{
+  margin: auto;
+  text-align: center;
+}
+.my-page button {
+  padding: 8px 15px;
+  background-color: var(--primary-bg);
+  border: none;
+  outline: none;
+  color: var(--c-text);
+  /* border-bottom: 2px solid var(--shadow); */
+  box-shadow: var(--light-shadow);
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  vertical-align: middle;
+  cursor: pointer;
+  margin: .5rem;
+  &:hover{
+    color: var(--c-brand);
+  }
+  &.disabled{
+    opacity: .5;
+  }
+}
 .article-wrapper {
   /* max-width: var(--nav-content-max-width); */
   --read: var(--nav-active-color);
@@ -196,8 +267,8 @@ const link = (link) => `${link}.html`;
       display: inline-block;
       height: 40px;
       max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+      overflow: hidden;
+      text-overflow: ellipsis;
       &::before {
         content: "";
         position: absolute;
